@@ -1,0 +1,82 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.qhad.ads.test.MainActivity">
+
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <CheckBox
+            android:id="@+id/cbCustomLandingPage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Custom Landing Page" />
+
+        <Button
+            android:id="@+id/bannerbutton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:text="BannerTest" />
+
+        <Button
+            android:id="@+id/splashbutton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:text="SpalshTest" />
+
+        <Button
+            android:id="@+id/nativebannerbutton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:text="NativeBannerTest" />
+
+        <Button
+            android:id="@+id/nativebannerlvbutton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:text="NativeBannerInListView" />
+
+        <Button
+            android:id="@+id/interbutton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:text="InterTest" />
+
+        <Button
+            android:id="@+id/nativebutton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:text="NativeTest" />
+
+        <Button
+            android:id="@+id/browserbutton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:text="QH Browser" />
+
+        <Button
+            android:id="@+id/htmladbutton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:text="HTML NativeAD" />
+
+    </LinearLayout>
+
+
+</RelativeLayout>

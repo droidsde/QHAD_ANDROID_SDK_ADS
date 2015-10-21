@@ -1,0 +1,70 @@
+package com.qhad.ads.sdk.adcore;
+
+/**
+ * Created by chengsiy on 2015/6/29.
+ */
+public interface _D {
+    int QHBANNERAD_CLOSEADS = 1;
+    int QHBANNERAD_SHOWADS = 2;
+    int QHBANNERAD_SETADEVENTLISTENER = 3;
+    int QHADEVENTLISTENER_onAdviewGotAdSucceed = 4;
+    int QHADEVENTLISTENER_onAdviewGotAdFail = 5;
+    int QHADEVENTLISTENER_onAdviewIntoLandpage = 6;
+    int QHADEVENTLISTENER_onAdviewDismissedLandpage = 7;
+    int QHADEVENTLISTENER_onAdviewClicked = 8;
+    int QHADEVENTLISTENER_onAdviewClosed = 9;
+    int QHADEVENTLISTENER_onAdviewDestroyed = 10;
+    int BRIDGE_getBanner = 11;
+    int BRIDGE_getInterstitial = 12;
+    int BRIDGE_getFloatingBanner = 13;
+    int BRIDGE_getSplashAd = 14;
+    int BRIDGE_getNativeAdLoader = 15;
+    int BRIDGE_getVideoAdLoader = 16;
+    int BRIDGE_activityDestroy = 17;
+    int BRIDGE_getServiceBridge = 18;
+    int BRIDGE_setLogSwitch = 19;
+    int BRIDGE_setLandingPageView = 20;
+    int QHFLOATBANNERAD_closeAds = 21;
+    int QHFLOATBANNERAD_setAdEventListener = 22;
+    int QHINTERSTITIALAD_closeAds = 23;
+    int QHINTERSTITIALAD_showAds = 24;
+    int QHINTERSTITIALAD_setAdEventListener = 25;
+    int QHNATIVEAD_getContent = 26;
+    int QHNATIVEAD_onAdShowed = 27;
+    int QHNATIVEAD_onAdClicked = 28;
+    int QHNATIVEADLISTENER_onNativeAdLoadSucceeded = 29;
+    int QHNATIVEADLISTENER_onNativeAdLoadFailed = 30;
+    int QHNATIVEADLOADER_loadAds = 31;
+    int QHNATIVEADLOADER_loadAds_2 = 32;
+    int QHNATIVEADLOADER_setKeywords = 34;
+    int QHNATIVEADLOADER_clearKeywords = 35;
+    int QHNATIVEADLOADER_setAdAttributes = 36;
+    int QHNATIVEADLOADER_clearAdAttributes = 37;
+    int QHVIDEOAD_getContent = 38;
+    int QHVIDEOAD_onAdPlayStarted = 39;
+    int QHVIDEOAD_onAdPlayExit = 40;
+    int QHVIDEOAD_onAdPlayFinshed = 41;
+    int QHVIDEOAD_onAdClicked = 42;
+    int QHVIDEOADONCLICKLISTENER_onDownloadConfirmed = 43;
+    int QHVIDEOADONCLICKLISTENER_onDownloadCancelled = 44;
+    int QHVIDEOADONCLICKLISTENER_onLandingpageOpened = 45;
+    int QHVIDEOADONCLICKLISTENER_onLandingpageClosed = 46;
+    int QHLANDINGPAGEVIEW_open = 47;
+    int QHLANDINGPAGELISTENER_onPageClose = 48;
+    int QHLANDINGPAGELISTENER_onPageLoadFinished = 49;
+    int QHLANDINGPAGELISTENER_onPageLoadFailed = 50;
+    int QHVIDEOADLOADER_loadAds = 51;
+    int QHVIDEOADLOADER_setAdAttributes = 52;
+    int QHVIDEOADLOADER_clearAdAttributes = 53;
+    int QHVIDEOADLISTENER_onVideoAdLoadSucceeded = 54;
+    int QHVIDEOADLISTENER_onVideoAdLoadFailed = 55;
+    int QHADATTRIBUTES_getAttributes = 56;
+    int TYPE_QHVIDEOADATTRIBUTES = 57;
+    int TYPE_QHPRODUCTADATTRIBUTES = 58;
+    int QHLANDINGPAGELISTENER_onAppDownload = 59;
+    int BRIDGE_getNativeBanner = 60;
+    int QHNATIVEBANNERAD_closeAds = 61;
+    int QHNATIVEBANNERAD_showAds = 62;
+    int QHNATIVEBANNERAD_setAdEventListener = 63;
+    int QHADEVENTLISTENER_onAdviewRendered = 64;
+}

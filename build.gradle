@@ -1,0 +1,82 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:+'
+    }
+}
+apply plugin: 'com.android.application'
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+    options.compilerArgs << "-Xlint:deprecation"
+}
+repositories {
+    mavenCentral()
+}
+android {
+    lintOptions {
+        abortOnError false
+    }
+    sourceSets {
+        main {
+            manifest.srcFile 'AndroidManifest.xml'
+            res.srcDirs = ['res/']
+            java.srcDirs = ['src/']
+            assets.srcDirs = ['assets']
+        }
+    }
+    defaultConfig {
+        applicationId 'com.qhad.ads'
+        targetSdkVersion 22
+        minSdkVersion 8
+    }
+    compileSdkVersion 22
+    buildToolsVersion "21.1.0"
+
+    productFlavors {
+        sdk {
+
+        }
+    }
+}
+task sdkDebugJar(type: Jar, dependsOn: ['compileSdkDebugSources', 'assembleSdkDebug']) {
+    File jarFile = file 'libs/sdkDebug.jar'
+    doFirst {
+        jarFile.delete()
+    }
+    exclude '**/R.class', '**/R$*.class', '**/R.html', '**/R.*.html', '**/BuildConfig.class'
+    exclude '**/sdk/interfaces/**'
+    exclude '**/sdk/adcore/Qh*.class'
+    exclude '**/sdk/service/QhAdService.class'
+    exclude '**/test/**'
+    exclude '**/unittest/**'
+    from 'build/intermediates/classes/sdk/debug/'
+    archiveName 'debug.jar'
+}
+task sdkDebugDex(type: Exec, dependsOn: sdkDebugJar) {
+    File dexFile = file 'build/libs/qhad_dynamic1113.jar'
+    doFirst {
+        dexFile.delete()
+    }
+    if (System.getProperty('os.name', '').toLowerCase().contains('windows')) {
+        commandLine 'cmd', '/c', String.format("\"%s\" --dex --output=build/libs/qhad_dynamic1113.jar build/libs/debug.jar", combine(android.getSdkDirectory(), "build-tools", android.buildToolsVersion, "dx"))
+    } else {
+        commandLine combine(android.getSdkDirectory(), "build-tools", android.buildToolsVersion, "dx"), '--dex', '--output=build/libs/qhad_dynamic1113.jar', 'build/libs/debug.jar'
+    }
+    standardOutput = new ByteArrayOutputStream()
+    ext.output = {
+        return standardOutput.toString()
+    }
+}
+
+File combine(java.io.File f, java.lang.String[] parts) {
+    for (String part : parts) {
+        f = new File(f, part)
+    }
+    return f
+}
+
+dependencies {
+    compile files('libs/android-support-v4.jar')
+}

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.qhad.ads"
+    android:versionCode="11"
+    android:versionName="3.1">
+
+    <uses-sdk
+        android:minSdkVersion="8"
+        android:targetSdkVersion="22" />
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.GET_TASKS" />
+
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="18" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@drawable/yuan"
+        android:label="@string/app_name"
+        android:theme="@style/AppTheme">
+        <activity
+            android:name="com.qhad.ads.test.LandingPageTest"
+            android:label="QH Browser">
+
+        </activity>
+        <activity android:name="com.qhad.ads.test.CustomLandingPageActivity" />
+        <activity
+            android:name="com.qhad.ads.test.BannerTest"
+            android:label="TEST"></activity>
+        <activity
+            android:name="com.qhad.ads.test.SplashActivity"
+            android:label="Splash Test"
+            android:theme="@android:style/Theme.NoTitleBar">
+
+        </activity>
+        <activity
+            android:name="com.qhad.ads.test.DownloadDialogTestActivity"
+            android:label="DownloadDialogTest"></activity>
+        <activity android:name="com.qhad.ads.test.DownloadTestActivity" />
+        <activity
+            android:name="com.qhad.ads.test.NativeTest"
+            android:label="NativeTest"></activity>
+        <activity
+            android:name="com.qhad.ads.test.NativeActivityTest"
+            android:label="NativeTest"></activity>
+        <activity
+            android:name=".sdk.adcore.QhAdActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+        <activity
+            android:name="com.qhad.ads.test.HomeActivity"
+            android:label="Home" />
+        <activity
+            android:name="com.qhad.ads.test.AMLTActivity"
+            android:label="Ad Memory Leak Test" />
+        <activity android:name="com.qhad.ads.test.InterTest" />
+
+        <service
+            android:name=".sdk.service.QhAdService"
+            android:enabled="true"
+            android:exported="true" />
+
+        <activity
+            android:name="com.qhad.ads.test.MainActivity"
+            android:label="@string/title_activity_main">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name="com.qhad.ads.test.NativeBannerTest"
+            android:label="@string/title_activity_main"></activity>
+
+        <activity
+            android:name="com.qhad.ads.test.NativeBannerInListView"
+            android:label="@string/title_activity_main"></activity>
+        <activity
+            android:name="com.qhad.ads.test.HtmlActivity"
+            android:label="@string/title_activity_html"></activity>
+    </application>
+
+</manifest>
