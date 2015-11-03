@@ -239,7 +239,7 @@ public class QhNativeAdLoader implements IQhNativeAdLoader, DynamicObject {
             QHADLog.d("URL编码失败");
         }
 
-        return StaticConfig.AD_URL + param;
+        return StaticConfig.HTTPS_AD_URL + param;
     }
 
 
