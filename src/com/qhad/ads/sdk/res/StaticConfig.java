@@ -66,7 +66,7 @@ public class StaticConfig {
     /**
      * QH手助上报HOST
      */
-    public static final String QHSZLOG_URL = "http://s.360.cn/zhushou/soft.html";
+    public static final String QHSZLOG_URL = "http://intf1.zsall.mobilem.360.cn/Stat/getPDownUrl";
 
     /**
      * 是否缓存

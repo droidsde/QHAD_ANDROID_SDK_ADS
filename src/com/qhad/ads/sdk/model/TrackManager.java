@@ -1,7 +1,5 @@
 package com.qhad.ads.sdk.model;
 
-import android.util.Log;
-
 import com.qhad.ads.sdk.logs.QHADLog;
 import com.qhad.ads.sdk.res.StaticConfig;
 import com.qhad.ads.sdk.res.TrackType;
@@ -152,7 +150,7 @@ public class TrackManager {
         if (type == downloadAppStart) {
 
             try {
-                url = StaticConfig.QHSZLOG_URL + "?market_id=mvad";
+                url = StaticConfig.QHSZLOG_URL + "?mnq=mvad";
                 if (vo.softid != null) {
                     url = url + "&sid=" + URLEncoder.encode(vo.softid + "", "utf-8");
                 } else {
