@@ -16,8 +16,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.provider.Browser;
 import android.text.TextUtils;
-import android.view.View;
-import android.widget.Toast;
 
 import com.qhad.ads.sdk.adcore.QhAdActivity;
 import com.qhad.ads.sdk.adsinterfaces.IQhAdEventListener;
@@ -25,7 +23,6 @@ import com.qhad.ads.sdk.adsinterfaces.IQhLandingPageListener;
 import com.qhad.ads.sdk.adsinterfaces.IQhLandingPageView;
 import com.qhad.ads.sdk.adsinterfaces.IQhVideoAdOnClickListener;
 import com.qhad.ads.sdk.core.AD_TYPE;
-import com.qhad.ads.sdk.core.DownloadConfirmLayout;
 import com.qhad.ads.sdk.core.LandingPageActivityBridge;
 import com.qhad.ads.sdk.core.QhAdView;
 import com.qhad.ads.sdk.core.QhSplashAd;
@@ -37,8 +34,12 @@ import com.qhad.ads.sdk.res.SwitchConfig;
 import com.qhad.ads.sdk.res.TrackType;
 import com.qhad.ads.sdk.utils.AdCounter;
 import com.qhad.ads.sdk.utils.LocalFileManager;
+import com.qhad.ads.sdk.utils.ToastUtil;
 import com.qhad.ads.sdk.utils.Utils;
 import com.qhad.ads.sdk.vo.CommonAdVO;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
@@ -58,6 +59,7 @@ public class ClickTask {
     private IQhVideoAdOnClickListener videoAdOnClickListener;
     private AlertDialog currentAlertDialog;
     private boolean isDialoging = false;
+    private int networkTypes;
 
     public ClickTask(CommonAdVO vo, IQhAdEventListener adEventListener, QhAdView adView, Context context) {
         this.vo = vo;
@@ -132,7 +134,7 @@ public class ClickTask {
         if (SwitchConfig.AllowUserCustomLandingPageView && QhAdModel.getInstance().getUserLandingPage() != null)
             return QhAdModel.getInstance().getUserLandingPage();
         else
-            return new DefaultQhLandingPageView();
+            return new DefaultMvLandingPageView();
     }
 
     public void onClick(String[] xy, String[] size) {
@@ -204,13 +206,40 @@ public class ClickTask {
         }
     }
 
+    /**
+     * @param networkTypes 网络类型 WIFI 3G
+     *                     1：执行下载 2：关闭开屏广告
+     */
+    private void downloadDialogActionConfirm(final int networkTypes) {
+        AdCounter.increment(AdCounter.ACTION_CONFIRM_DOWNLOAD);
+        if (videoAdOnClickListener != null) {
+            videoAdOnClickListener.onDownloadConfirmed();
+        }
+
+        QhAdModel.getInstance().getTrackManager().RegisterTrack(vo, TrackType.CLICK_AD);
+        if (handler == null) {
+            handler = new Handler() {
+                @Override
+                public void handleMessage(Message msg) {
+                    if (msg.what == 1) {
+                        download(networkTypes);
+                        closeQhSplashAd();
+                    }
+                }
+            };
+        }
+        new Thread(new ClickTracker()).start();
+        hideSystemAlertDialog();
+        isDialoging = false;
+    }
+
     @SuppressLint("HandlerLeak")
     public void startDownload() {
         QHADLog.d("start download");
         AdCounter.increment(AdCounter.ACTION_SDK_ON_CLICK_DOWNLOAD);
 
         if (Build.VERSION.SDK_INT < 9) {
-            Toast.makeText(context, "当前手机系统版本低，无法下载。建议升级到最新版本，谢谢！", Toast.LENGTH_SHORT).show();
+            showToast(context, "当前手机系统版本低，无法下载。建议升级到最新版本，谢谢！");
             isDialoging = false;
             return;
         }
@@ -218,9 +247,9 @@ public class ClickTask {
         String message;
         String yes;
         String no;
-        final int networkTypes;
+        String title = "下载提醒";
         if (null == type || "".equals(type)) {
-            Toast.makeText(context, "网络连接错误，请检查网络设置！", Toast.LENGTH_SHORT).show();
+            showToast(context, "网络连接错误，请检查网络设置！");
             isDialoging = false;
             return;
         }
@@ -245,79 +274,81 @@ public class ClickTask {
                         public void handleMessage(Message msg) {
                             if (msg.what == 1) {
                                 download(networkTypes);
-
-                                if (adView instanceof QhSplashAd) {
-                                    if (adEventListener != null)
-                                        adEventListener.onAdviewClosed();
-                                    ((QhSplashAd) adView).overAds();
-                                }
-
+                                closeQhSplashAd();
                                 isDialoging = false;
                             }
                         }
                     };
                 }
                 new Thread(new ClickTracker()).start();
-
                 return;
             }
         } catch (Throwable e) {
             QHADLog.e(QhAdErrorCode.CLICK_DOWNLOAD_APP_ERROR, "判断应用是否下载:Error.", e, vo);
         }
-        final View.OnClickListener okListener = new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                AdCounter.increment(AdCounter.ACTION_CONFIRM_DOWNLOAD);
 
-                if (videoAdOnClickListener != null) {
-                    videoAdOnClickListener.onDownloadConfirmed();
-                }
+        if (isNativeAdWithAppName()) {
+            //如果是原生广告而且APPName存在,就要弹MvadAlertDialog
+            try {
+                JSONObject nativeAdAdm = new JSONObject(vo.adm);
+                String logoUrl = nativeAdAdm.getString("logo");
+                String desc = nativeAdAdm.getString("desc");
 
-                QhAdModel.getInstance().getTrackManager().RegisterTrack(vo, TrackType.CLICK_AD);
-                if (handler == null) {
-                    handler = new Handler() {
-                        @Override
-                        public void handleMessage(Message msg) {
-                            if (msg.what == 1) {
-                                download(networkTypes);
-                                if (adView instanceof QhSplashAd) {
-                                    if (adEventListener != null)
-                                        adEventListener.onAdviewClosed();
-                                    ((QhSplashAd) adView).overAds();
-                                }
-                            }
-                        }
-                    };
-                }
-                new Thread(new ClickTracker()).start();
-                if (currentAlertDialog != null)
-                    currentAlertDialog.dismiss();
-                isDialoging = false;
+                hideSystemAlertDialog();
+
+                title = "将为您下载应用 " + vo.appName;
+                showSystemDialog(title, message, yes, no);
+
+//                QhadAlertDialog mvadAlertDialog = new QhadAlertDialog(context);
+//                mvadAlertDialog.setTitle(vo.appName);
+//                mvadAlertDialog.setDescription(desc);
+//                mvadAlertDialog.setMessage(message);
+//                mvadAlertDialog.setIcon(logoUrl);
+//                mvadAlertDialog.setNegativeText(no);
+//                mvadAlertDialog.setPositiveText(yes);
+//
+//                mvadAlertDialog.setMvadAlertListener(new QhadAlertDialog.IMvadAlertListener() {
+//                    @Override
+//                    public void onNegativeClicked(QhadAlertDialog dialog) {
+//                        downloadDialogActionCancel();
+//                    }
+//
+//                    @Override
+//                    public void onPositiveClicked(QhadAlertDialog dialog) {
+//                        downloadDialogActionConfirm(networkTypes);
+//                    }
+//
+//                    @Override
+//                    public void onCancel() {
+//                        downloadDialogActionCancel();
+//                    }
+//                });
+//                currentAlertDialog = mvadAlertDialog;
+//                mvadAlertDialog.show();
+
+            } catch (JSONException e) {
+                QHADLog.e(QhAdErrorCode.COMMON_ERROR, "init QhadAlertDialog error because JSONException,use default layout.", e, vo);
+                title = "下载提醒";
+                showSystemDialog(title, message, yes, no);
             }
-        };
-        final View.OnClickListener cancelListener = new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (videoAdOnClickListener != null) {
-                    videoAdOnClickListener.onDownloadCancelled();
-                }
+        } else {
+            showSystemDialog(title, message, yes, no);
+        }
 
-                AdCounter.increment(AdCounter.ACTION_CANCEL_DOWNLOAD);
+        if (adView instanceof QhSplashAd) {
+            ((QhSplashAd) adView).isPause = true;
+        }
+    }
 
-                if (currentAlertDialog != null)
-                    currentAlertDialog.dismiss();
-
-                if (adView instanceof QhSplashAd) {
-                    if (adEventListener != null)
-                        adEventListener.onAdviewClosed();
-                    ((QhSplashAd) adView).overAds();
-                }
-                isDialoging = false;
-            }
-        };
+    /**
+     * @param title   文本标题
+     * @param message 消息内容
+     * @param yes     确定文本
+     * @param no      取消文本
+     */
+    private void showSystemDialog(String title, String message, String yes, String no) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context)
                 .setOnCancelListener(new DialogInterface.OnCancelListener() {
-
                     @Override
                     public void onCancel(DialogInterface dialog) {
                         if (videoAdOnClickListener != null) {
@@ -331,39 +362,60 @@ public class ClickTask {
                         isDialoging = false;
                     }
                 });
-        DownloadConfirmLayout confirmLayout = null;
-        if (vo.adType == AD_TYPE.NATIVE && (vo.appName != null && Utils.isNotEmpty(vo.appName))) {
-            try {
-                confirmLayout = new DownloadConfirmLayout(context, vo.adm, message, vo.appName, yes, okListener, no, cancelListener);
-            } catch (Throwable e) {
-                QHADLog.e(QhAdErrorCode.COMMON_ERROR, "init DownloadConfirmLayout error,use default layout.", e, vo);
+
+        builder.setTitle(title);
+        builder.setMessage(message);
+        builder.setPositiveButton(yes, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                downloadDialogActionConfirm(networkTypes);
             }
-        }
-        if (confirmLayout != null)
-            builder.setView(confirmLayout);
-        else {
-            builder.setTitle("下载提醒");
-            builder.setMessage(message);
-            builder.setPositiveButton(yes, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    okListener.onClick(null);
-                }
-            });
-            builder.setNegativeButton(no, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    cancelListener.onClick(null);
-                }
-            });
-
-
-        }
+        });
+        builder.setNegativeButton(no, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                downloadDialogActionCancel();
+            }
+        });
         currentAlertDialog = builder.show();
+    }
 
-        if (adView instanceof QhSplashAd) {
-            ((QhSplashAd) adView).isPause = true;
+    //关闭开屏
+    private void closeQhSplashAd() {
+        if (adView != null && adView instanceof QhSplashAd) {
+            if (adEventListener != null)
+                adEventListener.onAdviewClosed();
+            ((QhSplashAd) adView).overAds();
         }
+    }
+
+    //隐藏当前的Dialog
+    private void hideSystemAlertDialog() {
+        if (currentAlertDialog != null && currentAlertDialog.isShowing()) {
+            currentAlertDialog.dismiss();
+        }
+    }
+
+    //1:取消下载提示框  2：关闭开屏广告
+    private void downloadDialogActionCancel() {
+        if (videoAdOnClickListener != null) {
+            videoAdOnClickListener.onDownloadCancelled();
+        }
+        AdCounter.increment(AdCounter.ACTION_CANCEL_DOWNLOAD);
+
+        hideSystemAlertDialog();
+        closeQhSplashAd();
+
+        isDialoging = false;
+    }
+
+    //是否是原生广告而且APPName存在
+    private boolean isNativeAdWithAppName() {
+        if (vo == null) {
+            QHADLog.e(QhAdErrorCode.AD_JSON_PARSE_ERROR, "Method: isNativeAdWithAppName vo is null...");
+            return false;
+        }
+        return vo.adType == AD_TYPE.NATIVE && !TextUtils.isEmpty(vo.appName);
     }
 
     public boolean isDownloaded() throws Exception {
@@ -443,7 +495,7 @@ public class ClickTask {
         }
         if (QhAdModel.getInstance().getUserLandingPage() != null && !SwitchConfig.AllowUserCustomLandingPageView)
             QhAdModel.getInstance().getUserLandingPage().open(context, null, null);//通知开发者自定义落地页被云控禁用
-        landingPageView.open(context, vo.ld, new QhLandingPageListenerImp(this));
+        landingPageView.open(context, vo.ld, new MvLandingPageListenerImp(this));
 
         if (adView instanceof QhSplashAd) {
             ((QhSplashAd) adView).overAds();
@@ -480,7 +532,7 @@ public class ClickTask {
 
     }
 
-    private static class QhLandingPageListenerImp implements IQhLandingPageListener {
+    private static class MvLandingPageListenerImp implements IQhLandingPageListener {
 
         private String advertiserid = "";
         private String campaignid = "";
@@ -491,7 +543,7 @@ public class ClickTask {
         private boolean isOnPageLoadFinishedCalled;
         private boolean isOnPageLoadFailedCalled;
 
-        public QhLandingPageListenerImp(ClickTask clickTask) {
+        public MvLandingPageListenerImp(ClickTask clickTask) {
             clickTaskWeakReference = new WeakReference<>(clickTask);
         }
 
@@ -510,7 +562,7 @@ public class ClickTask {
             impid = clickTask.vo.impid;
             String ntType = Utils.getCurrentNetWorkInfo();
             if (ntType == null || !Utils.isNotEmpty(ntType)) {
-                Toast.makeText(clickTask.context, "下载失败，当前无网络连接。", Toast.LENGTH_SHORT);
+                showToast(clickTask.context, "下载失败，当前无网络连接。");
                 return false;
             }
 
@@ -549,7 +601,7 @@ public class ClickTask {
                 }
 
                 Intent intent = new Intent(QhAdModel.getInstance().getContext(), QhAdModel.getInstance().getQhServiceCls());
-                intent.putExtra("url", url);
+                intent.putExtra("url", parsedUrl);
                 intent.putExtra("advertiserid", advertiserid);
                 intent.putExtra("campaignid", campaignid);
                 intent.putExtra("solutionid", solutionid);
@@ -563,7 +615,7 @@ public class ClickTask {
                     QhAdModel.getInstance().getContext().startService(intent);
                     return true;
                 } catch (Exception e) {
-                    Toast.makeText(clickTask.context, "下载失败，未知错误。", Toast.LENGTH_SHORT);
+                    showToast(clickTask.context, "下载失败，未知错误。");
                     QHADLog.e(QhAdErrorCode.CLICK_DOWNLOAD_APP_ERROR, "startService error.", e, null);
                     return false;
                 }
@@ -633,7 +685,7 @@ public class ClickTask {
         }
     }
 
-    private class DefaultQhLandingPageView implements IQhLandingPageView {
+    private class DefaultMvLandingPageView implements IQhLandingPageView {
 
         @Override
         public void open(Context context, String url, IQhLandingPageListener listener) {
@@ -711,5 +763,13 @@ public class ClickTask {
             msg.what = 1;
             handler.sendMessage(msg);
         }
+    }
+
+    /**
+     * @param context 上下文
+     * @param msg     提示内容
+     */
+    private static void showToast(Context context, String msg) {
+        ToastUtil.showToast(context, msg);
     }
 }

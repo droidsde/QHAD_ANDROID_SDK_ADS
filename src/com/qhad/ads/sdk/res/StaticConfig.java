@@ -34,7 +34,7 @@ public class StaticConfig {
     /**
      * 云更新包版本
      */
-    public static final int PACKAGE_VERSION = 1113;
+    public static final int PACKAGE_VERSION = 1115;
     /**
      * 广告系统HOST
      */
