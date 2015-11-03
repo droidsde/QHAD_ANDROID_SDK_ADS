@@ -39,6 +39,7 @@ public class StaticConfig {
      * 广告系统HOST
      */
     public static final String AD_URL = "http://show.m.mediav.com/s";
+    public static final String HTTPS_AD_URL = "https://show-m.mediav.com/s";
     /**
      * 错误上报HOST
      */

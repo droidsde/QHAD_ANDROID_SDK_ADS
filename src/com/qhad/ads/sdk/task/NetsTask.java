@@ -38,6 +38,10 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLHandshakeException;
+
 /**
  * @author Duan
  */
@@ -55,7 +59,12 @@ public class NetsTask {
             QHADLog.d("-------------------获取数据-------------------");
             QHADLog.d("获取数据:开始");
             URL url = new URL(_url);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            HttpURLConnection conn;
+            if (url.getProtocol().toLowerCase().equals("https")) {
+                conn = (HttpsURLConnection) url.openConnection();
+            } else {
+                conn = (HttpURLConnection) url.openConnection();
+            }
             conn.setConnectTimeout(StaticConfig.NET_TIMEOUT);
             conn.setUseCaches(false);
             conn.setRequestMethod("GET");
@@ -75,6 +84,12 @@ public class NetsTask {
                     QHADLog.e(QhAdErrorCode.COMMON_ERROR, "AdRequest Invalid HttpResponseCode:" + conn.getResponseCode() + ",url:" + url);
                 }
                 conn.disconnect();
+            }
+        } catch (SSLException e) {
+            QHADLog.e(QhAdErrorCode.COMMON_ERROR, "HTTPS AdRequest SSLException Catched," + "url:" + _url, e);
+            if (_url.startsWith(StaticConfig.HTTPS_AD_URL)) {
+                _url = _url.replace(StaticConfig.HTTPS_AD_URL, StaticConfig.AD_URL);
+                return getAdData(_url);
             }
         } catch (Exception e) {
             QHADLog.e(QhAdErrorCode.COMMON_ERROR, "AdRequest Exception Catched," + "url:" + _url, e);
